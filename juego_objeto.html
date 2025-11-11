@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Juego de Objetos - Letras con voz</title>
+  <style>
+    :root { --boton-bg: #007bff; --boton-hover: #0056b3; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f4f4;
+    }
+
+    #contenedor {
+      width: 100%;
+      max-width: 1100px;
+      padding: 18px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #imagen {
+      width: 80vw;
+      max-width: 1000px;
+      height: 60vh;
+      max-height: 700px;
+      object-fit: contain;
+      border-radius: 18px;
+      background: #fff;
+      padding: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      display: block;
+    }
+
+    #textoGrande {
+      width: 80vw;
+      max-width: 1000px;
+      height: 60vh;
+      max-height: 700px;
+      display: none;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      padding: 8px;
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #111;
+      user-select: none;
+    }
+
+    /* ✅ DISEÑO BONITO PARA LETRAS GRANDES */
+    #textoGrande .letra {
+      font-weight: 900;
+      line-height: 1;
+      font-size: 24vh;
+      text-shadow: 
+        4px 4px 0px #ff8c00,
+        8px 8px 8px rgba(0,0,0,0.3);
+      color: #ff3b3b;
+      padding: 10px 30px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fff7e6, #ffe0b3);
+      border: 6px solid #ff9900;
+      box-shadow: 0 0 30px rgba(255,140,0,0.4);
+      animation: pop 0.4s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 700px) {
+      #textoGrande .letra { font-size: 18vh; }
+      #imagen { height: 50vh; }
+    }
+
+    .botonera {
+      margin-top: 18px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--boton-bg);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+    }
+
+    button:hover { background: var(--boton-hover); }
+
+  </style>
+</head>
+<body>
+  <div id="contenedor">
+    <img id="imagen" src="img/manzana.jpeg" alt="Objeto" />
+
+    <div id="textoGrande" aria-hidden="true">
+      <div class="letra" id="letraTexto"></div>
+    </div>
+
+    <div class="botonera">
+      <button id="btnSiguiente">Siguiente objeto</button>
+      <button id="btnVocales">Modo: Vocales</button>
+      <button id="btnAbecedario">Modo: Abecedario</button>
+      <button id="btnNextLetra">Siguiente letra</button>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Datos ----------
+    const imagenes = [
+      "img/manzana.jpeg","img/paragua.webp","img/zapato.png","img/mono.jpg","img/lente.jpg",
+      "img/cono.jpeg","img/caracol.webp","img/almohada.webp","img/carro.webp","img/cereza.jpeg",
+      "img/computadora.webp","img/corbata.jpg","img/doctor.png","img/elefante.webp","img/estrella.jpg",
+      "img/jirafa.jpg","img/lapiz.webp","img/naranja.jpg","img/peine.jpeg","img/pera.jpg",
+      "img/pez.jpeg","img/piña.jpg","img/pollo.jpg","img/sol.jpg","img/sombrero.webp",
+      "img/telefono.jpeg","img/tren.png","img/vaca.png"
+    ];
+
+    const vocales = ["A","E","I","O","U"];
+    const abecedario = "A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z".split(" ");
+
+    let modo = "imagenes";
+    let idxImagen = 0;
+    let idxLetra = 0;
+
+    const elImagen = document.getElementById("imagen");
+    const contTexto = document.getElementById("textoGrande");
+    const letraTexto = document.getElementById("letraTexto");
+
+    const btnSiguiente = document.getElementById("btnSiguiente");
+    const btnVocales = document.getElementById("btnVocales");
+    const btnAbecedario = document.getElementById("btnAbecedario");
+    const btnNextLetra = document.getElementById("btnNextLetra");
+
+    let preferredVoice = null;
+    function elegirVozPreferida() {
+      const voices = speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
+      preferredVoice = voices.find(v =>
+        (v.lang && v.lang.toLowerCase().startsWith("es")) &&
+        (/female|femenin|woman|mujer|maria|laura|sofia/i).test(v.name + " " + v.voiceURI)
+      ) || voices.find(v => v.lang && v.lang.toLowerCase().startsWith("es")) || voices[0];
+    }
+    speechSynthesis.onvoiceschanged = elegirVozPreferida;
+    setTimeout(elegirVozPreferida, 600);
+
+    const pronunciar = {
+      "A": "a",
+      "B": "b",
+      "C": "c",
+      "D": "d",
+      "E": "e",
+      "F": "efe",
+      "G": "g",
+      "H": "hache",
+      "I": "i",
+      "J": "jota",
+      "K": "ka",
+      "L": "ele",
+      "M": "eme",
+      "N": "ene",
+      "Ñ": "eñe",
+      "O": "o",
+      "P": "pe",
+      "Q": "q",
+      "R": "erre",
+      "S": "ese",
+      "T": "te",
+      "U": "u",
+      "V": "uve",
+      "W": "doble uve",
+      "X": "equis",
+      "Y": "ye",
+      "Z": "zeta"
+    };
+
+    function speak(text) {
+      if (!("speechSynthesis" in window)) return;
+      try { speechSynthesis.cancel(); } catch(e){}
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "es-ES";
+      u.rate = 0.85;
+      u.pitch = 1;
+      if (preferredVoice) u.voice = preferredVoice;
+      speechSynthesis.speak(u);
+    }
+
+    function mostrarLetra(letra) {
+      elImagen.style.display = "none";
+      contTexto.style.display = "flex";
+      letraTexto.textContent = letra;
+      const textoADecir = pronunciar[letra] || letra;
+      speak(textoADecir);
+    }
+
+    function mostrarModoImagenes() {
+      modo = "imagenes";
+      contTexto.style.display = "none";
+      elImagen.style.display = "block";
+      elImagen.src = imagenes[idxImagen];
+    }
+
+    btnSiguiente.addEventListener("click", () => {
+      idxImagen = (idxImagen + 1) % imagenes.length;
+      mostrarModoImagenes();
+    });
+
+    btnVocales.addEventListener("click", () => {
+      modo = "vocales";
+      idxLetra = 0;
+      mostrarLetra(vocales[idxLetra]);
+    });
+
+    btnAbecedario.addEventListener("click", () => {
+      modo = "abc";
+      idxLetra = 0;
+      mostrarLetra(abecedario[idxLetra]);
+    });
+
+    btnNextLetra.addEventListener("click", () => {
+      if (modo === "vocales") {
+        idxLetra = (idxLetra + 1) % vocales.length;
+        mostrarLetra(vocales[idxLetra]);
+      } else if (modo === "abc") {
+        idxLetra = (idxLetra + 1) % abecedario.length;
+        mostrarLetra(abecedario[idxLetra]);
+      } else {
+        idxImagen = (idxImagen + 1) % imagenes.length;
+        mostrarModoImagenes();
+      }
+    });
+
+    window.addEventListener("load", () => {
+      elImagen.src = imagenes[idxImagen];
+      setTimeout(elegirVozPreferida, 100);
+    });
+  </script>
+</body>
+</html>
