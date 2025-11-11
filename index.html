@@ -57,7 +57,6 @@
       user-select: none;
     }
 
-    /* ✅ DISEÑO BONITO PARA LETRAS GRANDES */
     #textoGrande .letra {
       font-weight: 900;
       line-height: 1;
@@ -77,11 +76,6 @@
     @keyframes pop {
       0% { transform: scale(0.7); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
-    }
-
-    @media (max-width: 700px) {
-      #textoGrande .letra { font-size: 18vh; }
-      #imagen { height: 50vh; }
     }
 
     .botonera {
@@ -105,55 +99,40 @@
 
     button:hover { background: var(--boton-hover); }
 
+    @media (max-width: 768px) {
+      button {
+        flex: 1 1 45%;
+      }
+    }
 
 
-    /* ✅ Ajustes responsivos */
-@media (max-width: 1024px) {
-  #textoGrande {
-    height: 55vh;
-  }
-  #textoGrande .letra {
-    font-size: 20vh;
-  }
-}
-
-@media (max-width: 768px) {
+    @media (max-width: 480px) {
   #imagen {
-    width: 95vw;
+    width: 90vw;
     height: 45vh;
-    padding: 10px;
   }
+
   #textoGrande {
-    width: 95vw;
+    width: 90vw;
     height: 45vh;
   }
+
   #textoGrande .letra {
-    font-size: 17vh;
+    font-size: 18vh;
+    padding: 5px 15px;
   }
+
   .botonera {
-    flex-wrap: wrap;
-    gap: 8px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
+
   button {
-    flex: 1 1 45%;
+    width: 100%;
     font-size: 16px;
     padding: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  #imagen {
-    height: 40vh;
-  }
-  #textoGrande {
-    height: 40vh;
-  }
-  #textoGrande .letra {
-    font-size: 14vh;
-  }
-  button {
-    font-size: 14px;
-    padding: 8px;
   }
 }
 
@@ -176,7 +155,7 @@
     </div>
   </div>
 
- <script>
+<script>
   // ---------- Datos ----------
   const imagenes = [
     "img/manzana.jpeg","img/paragua.webp","img/zapato.png","img/mono.jpg","img/lente.jpg",
@@ -189,21 +168,40 @@
 
   const vocales = ["A","E","I","O","U"];
   const abecedario = "A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z".split(" ");
-  const numeros = Array.from({length: 21}, (_, i) => i.toString()); // 0 a 20
+  const numeros = Array.from({length: 21}, (_, i) => i.toString());
+  const colores = [
+    "Rojo", "Azul", "Verde", "Amarillo", "Naranja",
+    "Morado", "Negro", "Blanco", "Rosa", "Café"
+  ];
 
-  // ✅ pronunciación individual en español
+  // ✅ asignar colores reales para fondo
+  const coloresHex = {
+    "Rojo": "#ff0000",
+    "Azul": "#0000ff",
+    "Verde": "#00cc00",
+    "Amarillo": "#ffff00",
+    "Naranja": "#ff9900",
+    "Morado": "#8000ff",
+    "Negro": "#000000",
+    "Blanco": "#ffffff",
+    "Rosa": "#ff69b4",
+    "Café": "#8b4513"
+  };
+
   const pronunciar = {
-    // Vocales y letras
-    "A": "a","B": "b","C": "c","D": "d","E": "e","F": "efe","G": "g","H": "hache",
+    "A": "a","B": "be","C": "ce","D": "de","E": "e","F": "efe","G": "ge","H": "hache",
     "I": "i","J": "jota","K": "ka","L": "ele","M": "eme","N": "ene","Ñ": "eñe",
-    "O": "o","P": "pe","Q": "q","R": "erre","S": "ese","T": "te","U": "u","V": "uve",
+    "O": "o","P": "pe","Q": "cu","R": "erre","S": "ese","T": "te","U": "u","V": "uve",
     "W": "doble uve","X": "equis","Y": "ye","Z": "zeta",
 
-    // Números
     "0": "cero","1": "uno","2": "dos","3": "tres","4": "cuatro","5": "cinco",
-    "6": "seis","7": "siete","8": "ocho","9": "nueve","10": "diez",
-    "11": "once","12": "doce","13": "trece","14": "catorce","15": "quince",
-    "16": "dieciséis","17": "diecisiete","18": "dieciocho","19": "diecinueve","20": "veinte"
+    "6": "seis","7": "siete","8": "ocho","9": "nueve","10": "diez","11": "once","12": "doce",
+    "13": "trece","14": "catorce","15": "quince","16": "dieciséis","17": "diecisiete",
+    "18": "dieciocho","19": "diecinueve","20": "veinte",
+
+    "Rojo": "rojo","Azul": "azul","Verde": "verde","Amarillo": "amarillo",
+    "Naranja": "naranja","Morado": "morado","Negro": "negro","Blanco": "blanco",
+    "Rosa": "rosa","Café": "café"
   };
 
   let modo = "imagenes";
@@ -219,43 +217,60 @@
   const btnAbecedario = document.getElementById("btnAbecedario");
   const btnNextLetra = document.getElementById("btnNextLetra");
 
-  // ✅ Nueva referencia para números
   let preferredVoice = null;
 
   function elegirVozPreferida() {
     const voices = speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
-
     preferredVoice =
-      voices.find(v => v.lang.toLowerCase().includes("es") &&
-        (/female|femenin|mujer|woman|maria|sofia|laura/i).test(v.name + v.voiceURI)
-      ) ||
+      voices.find(v => v.lang.toLowerCase().includes("es") && /female|mujer|woman|sofia|maria|laura/i.test(v.name)) ||
       voices.find(v => v.lang.toLowerCase().includes("es")) ||
       voices[0];
   }
 
   speechSynthesis.onvoiceschanged = elegirVozPreferida;
-  setTimeout(elegirVozPreferida, 600);
+  setTimeout(elegirVozPreferida, 800);
 
   function speak(text) {
-    if (!("speechSynthesis" in window)) return;
-
     speechSynthesis.cancel();
-
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "es-ES";
-    u.rate = 0.85;
-    u.pitch = 1;
-
+    u.rate = 0.9;
     if (preferredVoice) u.voice = preferredVoice;
-
     speechSynthesis.speak(u);
   }
 
   function mostrarLetra(letra) {
+
     elImagen.style.display = "none";
     contTexto.style.display = "flex";
+
     letraTexto.textContent = letra;
+
+    // ✅ aplicar colores de fondo en modo colores
+    if (modo === "colores") {
+      const fondo = coloresHex[letra] || "#ffffff";
+      contTexto.style.background = fondo;
+
+      // texto legible
+      letraTexto.style.color = (letra === "Blanco" || letra === "Amarillo") ? "#000000" : "#ffffff";
+
+      // borrar sombras decorativas para colores
+      letraTexto.style.textShadow = "2px 2px 10px rgba(0,0,0,0.6)";
+      letraTexto.style.background = "transparent";
+      letraTexto.style.border = "none";
+      letraTexto.style.boxShadow = "none";
+    } else {
+      // ✅ restaurar diseño original para letras/números
+      contTexto.style.background = "#fff";
+
+      letraTexto.style.color = "#ff3b3b";
+      letraTexto.style.textShadow =
+        "4px 4px 0px #ff8c00,8px 8px 8px rgba(0,0,0,0.3)";
+      letraTexto.style.background = "linear-gradient(135deg,#fff7e6,#ffe0b3)";
+      letraTexto.style.border = "6px solid #ff9900";
+      letraTexto.style.boxShadow = "0 0 30px rgba(255,140,0,0.4)";
+    }
 
     const texto = pronunciar[letra] || letra;
     speak(texto);
@@ -268,8 +283,7 @@
     elImagen.src = imagenes[idxImagen];
   }
 
-  // ------------ Botones ------------
-
+  // Botones
   btnSiguiente.addEventListener("click", () => {
     idxImagen = (idxImagen + 1) % imagenes.length;
     mostrarModoImagenes();
@@ -287,16 +301,8 @@
     mostrarLetra(abecedario[idxLetra]);
   });
 
-  // ✅ BOTÓN NUEVO: modo números
   const btnNumeros = document.createElement("button");
   btnNumeros.textContent = "Modo: Números";
-  btnNumeros.style.padding = "12px 20px";
-  btnNumeros.style.fontSize = "18px";
-  btnNumeros.style.borderRadius = "10px";
-  btnNumeros.style.border = "none";
-  btnNumeros.style.background = "var(--boton-bg)";
-  btnNumeros.style.color = "white";
-  btnNumeros.style.boxShadow = "0 6px 12px rgba(0,0,0,0.12)";
   document.querySelector(".botonera").appendChild(btnNumeros);
 
   btnNumeros.addEventListener("click", () => {
@@ -305,20 +311,30 @@
     mostrarLetra(numeros[idxLetra]);
   });
 
+  const btnColores = document.createElement("button");
+  btnColores.textContent = "Modo: Colores";
+  document.querySelector(".botonera").appendChild(btnColores);
+
+  btnColores.addEventListener("click", () => {
+    modo = "colores";
+    idxLetra = 0;
+    mostrarLetra(colores[idxLetra]);
+  });
+
   btnNextLetra.addEventListener("click", () => {
     if (modo === "vocales") {
       idxLetra = (idxLetra + 1) % vocales.length;
       mostrarLetra(vocales[idxLetra]);
-    }
-    else if (modo === "abc") {
+    } else if (modo === "abc") {
       idxLetra = (idxLetra + 1) % abecedario.length;
       mostrarLetra(abecedario[idxLetra]);
-    }
-    else if (modo === "numeros") {
+    } else if (modo === "numeros") {
       idxLetra = (idxLetra + 1) % numeros.length;
       mostrarLetra(numeros[idxLetra]);
-    }
-    else {
+    } else if (modo === "colores") {
+      idxLetra = (idxLetra + 1) % colores.length;
+      mostrarLetra(colores[idxLetra]);
+    } else {
       idxImagen = (idxImagen + 1) % imagenes.length;
       mostrarModoImagenes();
     }
@@ -329,3 +345,6 @@
     setTimeout(elegirVozPreferida, 100);
   });
 </script>
+
+</body>
+</html>
