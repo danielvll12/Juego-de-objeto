@@ -341,10 +341,21 @@
     }
   });
 
-  window.addEventListener("load", () => {
-    elImagen.src = imagenes[idxImagen];
-    setTimeout(elegirVozPreferida, 100);
-  });
+ window.addEventListener("load", () => {
+  elImagen.src = imagenes[idxImagen];
+
+  // Elegir voz
+  setTimeout(elegirVozPreferida, 100);
+
+  // Pre-cargar la voz para reducir retraso
+  if (preferredVoice) {
+    const u = new SpeechSynthesisUtterance("");
+    u.lang = "es-ES";
+    u.voice = preferredVoice;
+    speechSynthesis.speak(u);
+  }
+});
+
 </script>
 
 </body>
